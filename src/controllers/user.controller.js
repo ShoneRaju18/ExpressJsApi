@@ -177,6 +177,29 @@ const refreshAccessToken = asyncHandler( async(req, res) => {
             )
 })
 
+const changeCurrentPassword = asyncHandler(async(req, res) => {
+  
+  const {oldPassword, newPassword} = req.body;
+
+  const isPasswordValid = await checkPassword(req.user.id, oldPassword);
+
+  if(!isPasswordValid)
+    throw new ApiError(400, "Invalid Current Password")
+
+  await prisma.user.update({
+    where: { id: req.user.id },
+    data: {
+      password: newPassword, // Sets the refreshToken field to null
+    },
+  })
+
+  return res.status(200)
+            .json(new ApiResponse(200, {}, "Password Changed Sucessfully"))
+})
+
+const getCurrentUser = asyncHandler(async(req, res) => {
+  return res.status(200).json(200, req.user, "current user fetched successfully")
+})
 
 //Helper Methods
 async function generateAccessToken(userId) {
@@ -268,6 +291,4 @@ const generateAccessAndRefreshToken = async(userId) => {
     }
 }
 
-
-
-export {registerUser, getUsers, loginUser, logoutUser, refreshAccessToken}
+export {registerUser, getUsers, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser}
